@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Movie` ADD COLUMN `cast` VARCHAR(191) NULL;
