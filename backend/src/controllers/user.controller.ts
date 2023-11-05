@@ -57,6 +57,9 @@ class UserController {
       return res.status(200).json({
         message: 'LoggedIn Sucessful',
         data: {
+          user:{
+            email:email
+          },
           accessToken,
           refreshToken,
         },
@@ -73,7 +76,7 @@ class UserController {
 
     const decodedToken =
       accessToken && (await this.userService.verifyJwt(accessToken, config.secret));
-    accessToken = jwt.sign({ email: decodedToken.id }, config.secret, {
+      accessToken = jwt.sign({ email: decodedToken.id }, config.secret, {
       expiresIn: config.tokenLife,
     });
 
@@ -106,7 +109,7 @@ class UserController {
         },
       });
       if (userExists > 0) {
-        return res.json({ message: `Email is already registered, Try login` });
+        return res.status(500).json({ message: `Email is already registered, Try login` });
       }
 
       const user = await prisma.user.create({
@@ -116,7 +119,7 @@ class UserController {
         },
       });
 
-      return res.json({ user });
+      return res.json({ user, message:"Account created successfully!" });
     } catch (error: any) {
       return res.status(500).json({
         message: `Error occurred while creating partner manager and partners - ${error.message}`,

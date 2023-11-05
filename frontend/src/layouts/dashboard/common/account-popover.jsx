@@ -8,17 +8,17 @@ import { alpha } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import { deepOrange } from '@mui/material/colors';
+import { useRouter } from 'src/routes/hooks';
 
-import { account } from 'src/_mock/account';
 
 // ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
-
+  const router = useRouter();
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
@@ -26,6 +26,14 @@ export default function AccountPopover() {
   const handleClose = () => {
     setOpen(null);
   };
+
+  const logout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    router.push('/login')
+  };
+
+  const user = localStorage.getItem("user");
 
   return (
     <>
@@ -42,15 +50,15 @@ export default function AccountPopover() {
         }}
       >
         <Avatar
-          src={account.photoURL}
-          alt={account.displayName}
+         
           sx={{
+            bgcolor: deepOrange[500],
             width: 36,
             height: 36,
             border: (theme) => `solid 2px ${theme.palette.background.default}`,
           }}
         >
-          {account.displayName.charAt(0).toUpperCase()}
+          {user.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
 
@@ -71,10 +79,10 @@ export default function AccountPopover() {
       >
         <Box sx={{ my: 1.5, px: 2 }}>
           <Typography variant="subtitle2" noWrap>
-            {account.displayName}
+            {user}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {account.email}
+            {user}
           </Typography>
         </Box>
 
@@ -83,7 +91,7 @@ export default function AccountPopover() {
         <MenuItem
           disableRipple
           disableTouchRipple
-          onClick={handleClose}
+          onClick={logout}
           sx={{ typography: 'body2', color: 'error.main', py: 1.5 }}
         >
           Logout

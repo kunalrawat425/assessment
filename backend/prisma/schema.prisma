@@ -23,7 +23,7 @@ model User {
 model Movie {
   id          Int      @id @default(autoincrement())
   name        String
-  rating      Int?
+  rating      String?
   genre       String?
   cast        String?
   releaseDate DateTime? 

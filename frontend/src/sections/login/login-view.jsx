@@ -1,8 +1,10 @@
+import axios from 'axios';
 import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -27,18 +29,46 @@ export default function LoginView() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleClick = () => {
-    router.push('/dashboard');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [err,setErr] = useState('')
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`http://localhost:3000/api/login`, formData);
+      if (response.data.data.accessToken) {
+        localStorage.setItem("user", response.data.data.user.email);
+        localStorage.setItem("accessToken", response.data.data.accessToken);
+        router.push('/movies');
+      }
+    } catch (error) {
+      setErr(error.response.data.message)
+      console.error('Error fetching data:', error);
+    }
+  };
+
+
   const renderForm = (
-    <>
+    <form onSubmit={handleSubmit}>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+        <TextField name="email" label="Email address" onChange={handleInputChange} />
 
         <TextField
           name="password"
           label="Password"
+          onChange={handleInputChange}
           type={showPassword ? 'text' : 'password'}
           InputProps={{
             endAdornment: (
@@ -51,19 +81,19 @@ export default function LoginView() {
           }}
         />
       </Stack>
-      <br/>
-      <br/>
+      <br />
+      <br />
       <LoadingButton
         fullWidth
         size="large"
         type="submit"
         variant="contained"
         color="inherit"
-        onClick={handleClick}
+        disabled={!formData.email || formData.password.length<8}
       >
         Login
       </LoadingButton>
-    </>
+    </form>
   );
 
   return (
@@ -96,11 +126,12 @@ export default function LoginView() {
 
           <Typography variant="body2" sx={{ mt: 2, mb: 5 }}>
             Don’t have an account?
-            <Link href='/register' variant="subtitle2" sx={{ ml: 0.5 }}>
-              Create 
+            <Link href="/register" variant="subtitle2" sx={{ ml: 0.5 }}>
+              Create
             </Link>
           </Typography>
-
+          {err && <Alert severity="error">{err}</Alert>}
+          <br/>
           {renderForm}
         </Card>
       </Stack>

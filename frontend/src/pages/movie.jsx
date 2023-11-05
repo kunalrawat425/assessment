@@ -8,7 +8,7 @@ export default function MoviePage() {
   return (
     <>
       <Helmet>
-        <title> Movies  </title>
+        <title> Movies </title>
       </Helmet>
 
       <UserView />

@@ -12,7 +12,6 @@ const navConfig = [
     path: '/movies',
     icon: icon('ic_user'),
   },
-
 ];
 
 export default navConfig;

@@ -12,6 +12,7 @@ class MovieController {
       rating: Joi.number().optional(),
       cast: Joi.string().optional(),
       genre: Joi.string().optional(),
+      releaseDate: Joi.date().optional()
     });
 
     const { error } = schema.validate(data);
@@ -52,6 +53,7 @@ class MovieController {
         rating: Joi.number().optional(),
         cast: Joi.string().optional(),
         genre: Joi.string().optional(),
+        releaseDate: Joi.date().optional()
       });
 
       const { error } = schema.validate(data);
@@ -122,11 +124,12 @@ class MovieController {
           .then()
           .catch((err: any) => err));
 
-      const movie = await prisma.movie.findFirst({
+      const movie = await prisma.movie.findMany({
         where: {
-          id: parseInt(id as string),
+          id: id ? parseInt(id as string):undefined,
           userId,
         },
+        orderBy:{'id':'desc'}
       });
 
       if (!movie) {

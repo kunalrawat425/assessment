@@ -1,19 +1,28 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
-// import Button from '@mui/material/Button';
+import Modal from '@mui/material/Modal';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import Rating from '@mui/material/Rating';
 
-import { users } from 'src/_mock/user';
-
-// import Iconify from 'src/components/iconify';
+import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
+
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { useRouter } from 'src/routes/hooks';
 
 import TableNoData from '../table-no-data';
 import UserTableRow from '../user-table-row';
@@ -21,21 +30,39 @@ import UserTableHead from '../user-table-head';
 import TableEmptyRows from '../table-empty-rows';
 import UserTableToolbar from '../user-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
-// import FormModal from '../modal';
+
 // ----------------------------------------------------------------------
 
 export default function UserPage() {
   const [page, setPage] = useState(0);
-
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState('desc');
 
   const [selected, setSelected] = useState([]);
 
-  const [orderBy, setOrderBy] = useState('name');
+  const [users, setUsers] = useState([]);
+
+  const [orderBy, setOrderBy] = useState('id');
 
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    // Fetch data when the component mounts
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/movie',{ headers: {"Authorization" : `Bearer ${localStorage.getItem('accessToken')}`} });
+        console.log(response.data.movie);
+        setUsers(response.data.movie);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -92,26 +119,131 @@ export default function UserPage() {
     filterName,
   });
 
-  const notFound = !dataFiltered.length && !!filterName;
-  // const [open, setOpen] = useState(false);
+  const notFound = !users.length;
+  const [open, setOpen] = useState(false);
 
-  // const handleOpen = () => {
-  //   setOpen(true);
-  // };
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-  // const handleClose = () => {
-  //   setOpen(false);
-  // };
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const [formData, setFormData] = useState({
+    name: undefined,
+    cast: undefined,
+    genre: undefined,
+    rating: undefined,
+    releaseDate: undefined,
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleDateChange = (value) => {
+    setFormData({
+      ...formData,
+      releaseDate: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:3000/api/movie', formData ,{ headers: {"Authorization" : `Bearer ${localStorage.getItem('accessToken')}`} });
+      setUsers(response.data.movie);
+      router.reload('/movies');
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">Movies</Typography>
 
-        {/* <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />} onClick={handleOpen}>
+        <Button
+          variant="contained"
+          color="inherit"
+          startIcon={<Iconify icon="eva:plus-fill" />}
+          onClick={handleOpen}
+        >
           New Movie
-        </Button> */}
-        {/* <FormModal open={open} onClose={handleClose} /> */}
+        </Button>
+        <Modal open={open} onClose={handleClose}>
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'white',
+              padding: 20,
+            }}
+          >
+            <form onSubmit={handleSubmit}>
+              <TextField
+                name="name"
+                label="Name"
+                value={formData.name}
+                onChange={handleInputChange}
+                margin="normal"
+                variant="outlined"
+                fullWidth
+              />
+              <TextField
+                name="genre"
+                label="Genre"
+                value={formData.genre}
+                onChange={handleInputChange}
+                margin="normal"
+                variant="outlined"
+                fullWidth
+              />
+              <TextField
+                name="cast"
+                label="Cast"
+                value={formData.cast}
+                onChange={handleInputChange}
+                margin="normal"
+                variant="outlined"
+                fullWidth
+              />
+              <Typography component="legend">Ratings</Typography>
+              <br />
+
+              <Rating
+                name="rating"
+                value={formData.rating}
+                onChange={(event, newValue) => {
+                  handleInputChange(event);
+                }}
+              />
+              <br />
+
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DemoContainer components={['DatePicker']}>
+                  <DatePicker
+                    value={formData.releaseDate}
+                    onChange={(newValue) => handleDateChange(newValue)}
+                  />
+                </DemoContainer>
+              </LocalizationProvider>
+              <br />
+              <Button type="submit" variant="contained" color="primary">
+                Submit
+              </Button>
+            </form>
+          </div>
+        </Modal>
       </Stack>
 
       <Card>
@@ -132,11 +264,12 @@ export default function UserPage() {
                 onRequestSort={handleSort}
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
+                  { id: 'id', label: 'ID' },
                   { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
+                  { id: 'genre', label: 'Genre' },
+                  { id: 'cast', label: 'Cast' },
+                  { id: 'rating', label: 'Rating' },
+                  { id: 'releaseDate', label: 'Release Date', align: 'center' },
                   { id: '' },
                 ]}
               />
@@ -146,13 +279,13 @@ export default function UserPage() {
                   .map((row) => (
                     <UserTableRow
                       key={row.id}
+                      id={row.id}
                       name={row.name}
-                      role={row.role}
-                      status={row.status}
-                      company={row.company}
-                      avatarUrl={row.avatarUrl}
-                      isVerified={row.isVerified}
-                      selected={selected.indexOf(row.name) !== -1}
+                      genre={row.genre}
+                      rating={row.rating}
+                      cast={row.cast}
+                      releaseDate={row.releaseDate}
+                      // selected={selected.indexOf(row.name) !== -1}
                       handleClick={(event) => handleClick(event, row.name)}
                     />
                   ))}
