@@ -13,9 +13,9 @@ import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Rating from '@mui/material/Rating';
-
+import Chip from '@mui/material/Chip';
+import Autocomplete from '@mui/material/Autocomplete';
 import Iconify from 'src/components/iconify';
-
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -32,7 +32,6 @@ export default function UserTableRow({
   rating,
   cast,
   releaseDate,
-  handleClick,
 }) {
   const [open, setOpen] = useState(null);
   const [openM, setOpenM] = useState(null);
@@ -97,6 +96,13 @@ export default function UserTableRow({
     });
   };
 
+  const handleSelectChange = (event, newValue) => {
+    setFormData({
+      ...formData,
+      cast: newValue,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -130,15 +136,15 @@ export default function UserTableRow({
         <TableCell>{id}</TableCell>
         <TableCell component="th" scope="row" padding="none">
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Typography variant="subtitle2" noWrap>
+            <Typography variant="subtitle2" noWrap sx={{textTransform: 'capitalize'}}>
               {fname}
             </Typography>
           </Stack>
         </TableCell>
 
-        <TableCell>{genre}</TableCell>
+        <TableCell> <Typography variant="subtitle2" noWrap sx={{textTransform: 'capitalize'}}>{genre}</Typography></TableCell>
 
-        <TableCell>{cast}</TableCell>
+        <TableCell>{cast.map((c)=><Chip label={c} />)}</TableCell>
 
         <TableCell>{rating}</TableCell>
 
@@ -201,15 +207,32 @@ export default function UserTableRow({
               variant="outlined"
               fullWidth
             />
-            <TextField
-              name="cast"
-              label="Cast"
-              value={formData.cast}
-              onChange={handleInputChange}
-              margin="normal"
-              variant="outlined"
-              fullWidth
-            />
+              <br/>
+
+              <Typography component="legend">Casts</Typography>
+              <Autocomplete
+                name="casts"
+                label="Casts"
+                multiple
+                id="tags-filled"
+                onChange={handleSelectChange}
+                value={formData.cast}
+                options={[].map((option) => option.title)}
+                freeSolo
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    placeholder="Casts"
+                  />
+                )}
+              />
+              <br/>
             <Typography component="legend">Ratings</Typography>
             <br />
 
@@ -225,7 +248,7 @@ export default function UserTableRow({
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={['DatePicker']}>
                 <DatePicker
-                  value={formData.releaseDate}
+                  value={new Date(formData.releaseDate)}
                   onChange={(newValue) => handleDateChange(newValue)}
                 />
               </DemoContainer>
@@ -244,7 +267,6 @@ export default function UserTableRow({
 UserTableRow.propTypes = {
   id: PropTypes.any,
   fname: PropTypes.any,
-  handleClick: PropTypes.func,
   selected: PropTypes.any,
   genre: PropTypes.string,
   rating: PropTypes.string,

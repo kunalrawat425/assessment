@@ -13,7 +13,8 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import Rating from '@mui/material/Rating';
-
+import Chip from '@mui/material/Chip';
+import Autocomplete from '@mui/material/Autocomplete';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 
@@ -153,6 +154,13 @@ export default function UserPage() {
     });
   };
 
+  const handleSelectChange = (event, newValue) => {
+    setFormData({
+      ...formData,
+      cast: newValue,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -208,17 +216,33 @@ export default function UserPage() {
                 variant="outlined"
                 fullWidth
               />
-              <TextField
-                name="cast"
-                label="Cast"
-                value={formData.cast}
-                onChange={handleInputChange}
-                margin="normal"
-                variant="outlined"
-                fullWidth
+              <br/>
+              <br/>
+
+              <Autocomplete
+                name="casts"
+                label="Casts"
+                multiple
+                id="tags-filled"
+                onChange={handleSelectChange}
+                options={[].map((option) => option.title)}
+                freeSolo
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    placeholder="Casts"
+                  />
+                )}
               />
-              <Typography component="legend">Ratings</Typography>
               <br />
+
+              <Typography component="legend">Ratings</Typography>
 
               <Rating
                 name="rating"
@@ -228,7 +252,9 @@ export default function UserPage() {
                 }}
               />
               <br />
+              <br />
 
+              <Typography component="legend">Release Date</Typography>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={['DatePicker']}>
                   <DatePicker
@@ -280,7 +306,7 @@ export default function UserPage() {
                     <UserTableRow
                       key={row.id}
                       id={row.id}
-                      name={row.name}
+                      fname={row.name}
                       genre={row.genre}
                       rating={row.rating}
                       cast={row.cast}

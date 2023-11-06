@@ -10,7 +10,7 @@ class MovieController {
     const schema = Joi.object().keys({
       name: Joi.string().required(),
       rating: Joi.number().optional(),
-      cast: Joi.string().optional(),
+      cast: Joi.optional(),
       genre: Joi.string().optional(),
       releaseDate: Joi.date().optional()
     });
@@ -33,6 +33,7 @@ class MovieController {
       const movie = await prisma.movie.create({
         data: { ...req.body, userId },
       });
+      console.log(data)
 
       return res.status(201).json({ message: 'Movie created successfully!', movie });
 
@@ -51,7 +52,7 @@ class MovieController {
       const schema = Joi.object().keys({
         name: Joi.string().required(),
         rating: Joi.number().optional(),
-        cast: Joi.string().optional(),
+        cast: Joi.optional(),
         genre: Joi.string().optional(),
         releaseDate: Joi.date().optional()
       });
