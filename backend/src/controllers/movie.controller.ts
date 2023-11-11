@@ -6,7 +6,7 @@ import UserService from '../services/user.service';
 class MovieController {
   public userService = new UserService();
 
-  async validationCreate(data:any){
+  async validationCreate(data: any) {
     const schema = Joi.object().keys({
       name: Joi.string().required(),
       rating: Joi.number().optional(),
@@ -20,32 +20,31 @@ class MovieController {
     if (error) {
       throw new Error(error.message)
     }
-    
+
   }
 
-  create = async (req: Request, res: Response) => {
-    const accessToken = req.headers.authorization;
-    const userId = accessToken && await this.userService.getUserId(accessToken);
-    
+  create = async (req: any, res: Response) => {
+    const { userId } = req.user;
+
     try {
       const data = req.body;
       await this.validationCreate(data);
       const movie = await prisma.movie.create({
         data: { ...req.body, userId },
       });
-      console.log(data)
 
       return res.status(201).json({ message: 'Movie created successfully!', movie });
 
     } catch (error: any) {
       console.log(`Error occurred while creating movie  - ${error}`);
+
       return res.status(500).json({
         message: `Error while creating movie -  ${error.message}`,
       });
     }
   };
 
-  update = async (req: Request, res: Response) => {
+  update = async (req: any, res: Response) => {
     try {
       const data = req.body;
       const { id } = req.query;
@@ -65,13 +64,7 @@ class MovieController {
           data: error.message,
         });
       }
-      const accessToken = req.headers.authorization;
-      const userId =
-        accessToken &&
-        (await this.userService
-          .getUserId(accessToken)
-          .then()
-          .catch((err: any) => err));
+      const { userId } = req.user;
 
       const movie = await prisma.movie.update({
         where: {
@@ -82,29 +75,27 @@ class MovieController {
       });
 
       return res.status(200).json({ message: 'Movie updated successfully!', movie });
+
     } catch (error: any) {
+
       return res.status(500).json({
         message: `${error.meta.cause}`,
       });
+
     }
   };
 
-  delete = async (req: Request, res: Response) => {
+  delete = async (req: any, res: Response) => {
     try {
-      const { id } = req.query;
-      const accessToken = req.headers.authorization;
-      const userId =
-        accessToken &&
-        (await this.userService
-          .getUserId(accessToken)
-          .then()
-          .catch((err: any) => err));
 
+      const { id } = req.query;
+      const { userId } = req.user;
       await prisma.movie.delete({
         where: { id: parseInt(id as string), userId },
       });
 
       return res.status(201).json({ message: 'Movie has been deleted' });
+
     } catch (error: any) {
       console.log(`Error occurred while deleting movie - ${error.message}`);
 
@@ -114,23 +105,16 @@ class MovieController {
     }
   };
 
-  get = async (req: Request, res: Response) => {
+  get = async (req: any, res: Response) => {
     try {
       const { id } = req.query;
-      const accessToken = req.headers.authorization;
-      const userId =
-        accessToken &&
-        (await this.userService
-          .getUserId(accessToken)
-          .then()
-          .catch((err: any) => err));
-
+      const { userId } = req.user;
       const movie = await prisma.movie.findMany({
         where: {
-          id: id ? parseInt(id as string):undefined,
+          id: id ? parseInt(id as string) : undefined,
           userId,
         },
-        orderBy:{'id':'desc'}
+        orderBy: { 'id': 'desc' }
       });
 
       if (!movie) {

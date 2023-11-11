@@ -71,21 +71,6 @@ class UserController {
     }
   };
 
-  generateAccessToken = async (req: Request, res: Response) => {
-    let accessToken = req.headers.authorization;
-
-    const decodedToken =
-      accessToken && (await this.userService.verifyJwt(accessToken, config.secret));
-      accessToken = jwt.sign({ email: decodedToken.id }, config.secret, {
-      expiresIn: config.tokenLife,
-    });
-
-    res.status(200).json({
-      accessToken,
-      message: 'New token generated',
-    });
-  };
-
   createUser = async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
